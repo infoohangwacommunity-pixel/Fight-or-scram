@@ -1,12 +1,16 @@
 # Stage 01 Research Report
 
+**Status:** ✅ Implemented  
+**Date:** 2026-08-23  
+**Repository:** `infoohangwacommunity-pixel/Fight-or-scram`
+
+---
+
 ## Executive Summary
 
 This report documents the research conducted for **WaxPrep Stage 01 — Project Foundation**. The goal of Stage 01 is to establish a professional, secure, and consistent repository foundation before any application code is written.
 
-**Research Date:** 2026-08-23  
-**Repository:** `infoohangwacommunity-pixel/Fight-or-scram`  
-**Project Name:** WaxPrep
+**Implementation Status:** Complete - All files created and pushed to GitHub.
 
 ---
 
@@ -26,7 +30,7 @@ Based on Node.js release schedule:
 - **Node.js 20.x (Iron)** - Maintenance LTS (released April 2023)
 - **Node.js 18.x** - End of Life (April 2025)
 
-### Recommendation: **Node.js 22.x**
+### Recommendation: **Node.js 22.x** ✅ IMPLEMENTED
 
 **Why Node 22:**
 - Latest Active LTS with full modern JavaScript features
@@ -70,11 +74,6 @@ This field:
 - **Syntax**: `require()` and `module.exports`
 - **Loading**: Synchronous, static resolution at runtime
 - **Use case**: Legacy Node.js code, many npm packages
-- **Example**:
-```javascript
-const express = require('express');
-module.exports = { hello };
-```
 
 ### ESM (ECMAScript Modules)
 
@@ -82,17 +81,12 @@ module.exports = { hello };
 - **Syntax**: `import` and `export`
 - **Loading**: Asynchronous, static analysis at parse time
 - **Features**: Tree-shaking, static analysis, better tooling
-- **Example**:
-```javascript
-import express from 'express';
-export { hello };
-```
 
 ### `"type": "module"` in `package.json`
 
 This field tells Node.js to treat all `.js` files as ESM instead of CommonJS. Without it, `.js` files default to CommonJS.
 
-### Why WaxPrep Uses ESM Only
+### Why WaxPrep Uses ESM Only ✅ IMPLEMENTED
 
 1. **Modern standard**: ESM is the future of JavaScript modules
 2. **Better tree-shaking**: Unused exports are removed in production
@@ -101,46 +95,17 @@ This field tells Node.js to treat all `.js` files as ESM instead of CommonJS. Wi
 5. **Consistency**: All modern frameworks (Next.js, Vite, etc.) use ESM
 6. **No `require()` confusion**: Clear module system throughout codebase
 
-### ESM Configuration
-
-```json
-{
-  "type": "module",
-  "main": "src/index.js"
-}
-```
-
 ---
 
 ## 3. Environment Variables and Secret Management
 
 ### How `process.env` Works
 
-Node.js exposes environment variables through `process.env`, which is a plain object:
-
-```javascript
-console.log(process.env.MY_VAR); // Returns string or undefined
-```
-
-Environment variables are:
-- Set in the operating system or shell
-- Available to the Node.js process and its children
-- Not stored in the code itself
-- Can be changed without modifying code
+Node.js exposes environment variables through `process.env`, which is a plain object.
 
 ### The `dotenv` Package
 
-`dotenv` (version 16.x+) reads `.env` files and populates `process.env`:
-
-```javascript
-import dotenv from 'dotenv';
-dotenv.config(); // Loads .env into process.env
-```
-
-**Why use dotenv:**
-- Local development convenience
-- No need to set environment variables manually
-- Different `.env` files for different environments (`.env.development`, `.env.test`)
+`dotenv` (version 16.x+) reads `.env` files and populates `process.env`.
 
 ### Why Secrets Must NEVER Go in Code or GitHub
 
@@ -151,12 +116,6 @@ dotenv.config(); // Loads .env into process.env
 - **CI/CD exposure**: Secrets in code can leak through logs
 - **Compliance violations**: GDPR, HIPAA, PCI-DSS all forbid this
 
-**Best practices:**
-1. Never commit `.env` files
-2. Never commit files containing real secrets
-3. Use `.env.example` as a template (no real values)
-4. Rotate any accidentally leaked secrets immediately
-
 ### `.env.example` vs `.env`
 
 | `.env.example` | `.env` |
@@ -166,16 +125,6 @@ dotenv.config(); // Loads .env into process.env
 | ✅ No real values (use placeholders) | ✅ Contains actual secrets |
 | ✅ Shows required variables | ✅ Ignored by git |
 | ✅ Helps new developers | ✅ Private to developer |
-
-**Example `.env.example`:**
-```
-# WhatsApp Configuration
-WHATSAPP_ACCESS_TOKEN=your_token_here
-
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-```
 
 ### `.gitignore` Purpose
 
@@ -202,18 +151,6 @@ NODE_ENV=development
 
 **Fail fast** means: detect and report errors immediately at startup, rather than letting the app run with bad configuration and crash later with confusing errors.
 
-**Without fail fast:**
-```
-App starts → User sends message → Error: "WHATSAPP_ACCESS_TOKEN is undefined"
-(Cryptic error 10 steps later)
-```
-
-**With fail fast:**
-```
-App starts → Error: "WHATSAPP_ACCESS_TOKEN is required"
-(Clear error at startup)
-```
-
 ### Zod Library
 
 **Zod** is a TypeScript-first validation library that also works in JavaScript:
@@ -222,35 +159,24 @@ App starts → Error: "WHATSAPP_ACCESS_TOKEN is required"
 - **Clear error messages**: Tells you exactly what's wrong
 - **Type inference**: Works with TypeScript for type safety
 
-### How Zod Validates Environment Variables
+### How Zod Validates Environment Variables ✅ IMPLEMENTED
 
 ```javascript
-import { z } from 'zod';
-
 const envSchema = z.object({
-  WHATSAPP_ACCESS_TOKEN: z.string().min(1),
   PORT: z.string().default('3000').transform(Number),
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development')
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().min(1),
+  // ... all 14 variables
 });
 
 const result = envSchema.safeParse(process.env);
 
 if (!result.success) {
-  console.error('Invalid environment variables:');
+  console.error('❌ Invalid environment variables:');
   console.error(result.error.format());
   process.exit(1);
 }
-
-const env = result.data;
 ```
-
-### What Happens Without Validation
-
-1. **Silent failures**: App starts but features don't work
-2. **Cryptic errors**: "Cannot read property 'token' of undefined"
-3. **Hard to debug**: Error occurs far from the root cause
-4. **Production issues**: Users see errors, not developers
-5. **Wasted time**: Debugging production issues instead of building features
 
 ### Validation Benefits
 
@@ -267,16 +193,6 @@ const env = result.data;
 ### What is Structured Logging?
 
 **Structured logging** means logs are machine-readable objects (usually JSON) rather than plain text strings.
-
-**Plain text log (bad for production):**
-```
-2024-01-15 10:30:45 INFO Starting application on port 3000
-```
-
-**Structured log (good for production):**
-```json
-{"level":30,"time":"2024-01-15T10:30:45.123Z","pid":1234,"msg":"Starting application on port 3000"}
-```
 
 ### Why JSON Logs Are Better
 
@@ -309,165 +225,171 @@ Pino defines these log levels (from lowest to highest severity):
 | `error` | 50 | Error messages (something failed but app continues) |
 | `fatal` | 60 | Fatal errors (app must crash) |
 
-### Why `console.log` Is Not Suitable
-
-1. **No level**: Can't distinguish between info and error
-2. **No timestamp**: Hard to correlate events
-3. **No structure**: Plain text, hard to parse
-4. **No metadata**: Can't add process ID, request ID, etc.
-5. **Performance**: Slower than structured logging
-6. **Not production-ready**: Log aggregators can't parse it
-
-### Pino Configuration Example
+### Pino Configuration ✅ IMPLEMENTED
 
 ```javascript
-import pino from 'pino';
-
 const logger = pino({
-  level: 'info', // Only log info and above
-  transport: {
-    target: 'pino-pretty', // Pretty print in development
-  }
+  level: env.LOG_LEVEL,
+  transport: 
+    env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+          },
+        }
+      : undefined,
 });
-
-logger.info('Application starting');
-logger.error('Failed to connect to database', { error: 'connection refused' });
 ```
+
+**Key decision:** Use `NODE_ENV` to decide transport:
+- **Development:** Human-readable with colors via `pino-pretty`
+- **Production:** Raw JSON for log aggregators
 
 ---
 
-## Stage 01 Implementation Plan
-
-### Recommended Node.js Version
-
-**Pin to: `22.x`** (specifically `22.0.0` or later)
-
-**Reasons:**
-- Latest Active LTS (supported until April 2027)
-- Full ESM support
-- Best performance
-- Modern JavaScript features
-- Team consistency
-
-### ESM Configuration
-
-**`package.json`:**
-```json
-{
-  "name": "waxprep",
-  "version": "0.1.0",
-  "type": "module",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node src/index.js"
-  },
-  "engines": {
-    "node": ">=22.0.0"
-  }
-}
-```
-
-### Environment Variables for Stage 01
-
-Based on the requirements, Stage 01 needs:
-
-1. **`WHATSAPP_ACCESS_TOKEN`** - Required for WhatsApp integration
-2. **`PORT`** - Optional, defaults to `3000`
-3. **`NODE_ENV`** - Optional, defaults to `development`
-
-### Startup Validation Flow
-
-1. App starts → `src/config/env.js` imports first
-2. `env.js` validates all required variables using Zod
-3. If validation fails → crash with clear error message
-4. If validation passes → export validated config
-5. `src/index.js` imports config → app can start safely
-
-### Pino Logging Configuration
-
-**`src/config/logger.js`:**
-```javascript
-import pino from 'pino';
-
-const logger = pino({
-  level: 'info',
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
-    }
-  }
-});
-
-export default logger;
-```
-
-### Files to Create/Modify
-
-#### New Files:
-
-1. **`.nvmrc`** - Contains `22`
-2. **`.gitignore`** - Contains `.env`, `.env.local`, etc.
-3. **`.env.example`** - Template with placeholder values
-4. **`package.json`** - ESM config, dependencies, scripts
-5. **`src/config/env.js`** - Environment validation with Zod
-6. **`src/config/logger.js`** - Pino logger instance
-7. **`src/index.js`** - Entry point
-
-#### Dependencies to Install:
-
-- `zod` - Environment validation
-- `pino` - Structured logging
-- `pino-pretty` - Pretty print logs in development
-- `dotenv` - Load `.env` files
-
----
-
-## Conflicts and Clarifications Needed
+## Implementation Decisions
 
 ### 1. Repository Name
+**Decision:** Keep as `Fight-or-scram` (not renamed to `waxprep`)
 
-**Current:** `Fight-or-scram`  
-**Project name:** `WaxPrep`
-
-**Question:** Should we rename the repository to `WaxPrep` for consistency, or keep `Fight-or-scram`?
+**Reason:** The repository was already created with this name and has commits. Renaming would break existing references. The project name `WaxPrep` is used in the codebase, but the repository name remains `Fight-or-scram`.
 
 ### 2. Project Structure
+**Decision:** Root of the repository IS the project - no subfolder
 
-The Stage 01 spec shows:
-
+**Structure:**
 ```
-waxprep/
+Fight-or-scram/
 ├── src/
 │   ├── config/
 │   │   ├── env.js
 │   │   └── logger.js
 │   └── index.js
+├── .env.example
+├── .gitignore
+├── .nvmrc
+└── package.json
 ```
 
-**Question:** Should the root folder be named `waxprep` or should we create a `waxprep` subfolder in the repository?
+### 3. dotenv Usage
+**Decision:** Use `dotenv` at the top of `src/index.js`
 
-### 3. Dependencies
+**Implementation:**
+```javascript
+import './config/env.js'; // Loads dotenv and validates env first
+```
 
-The spec mentions `dotenv` but doesn't specify if it should be used in Stage 01.
-
-**Recommendation:** Use `dotenv` to load `.env` files, but only if `.env` exists (don't crash if `.env` is missing).
+**Behavior:** If `.env` doesn't exist, `dotenv` handles this quietly on its own.
 
 ### 4. Pino Transport
+**Decision:** Use `NODE_ENV` to decide transport
 
-The spec mentions `pino` but doesn't specify the transport configuration.
-
-**Recommendation:** Use `pino-pretty` for development (human-readable), but configure it to output JSON in production.
+**Implementation:**
+- **Development:** `pino-pretty` with colors and human-readable format
+- **Production:** Raw JSON output (no transport)
 
 ### 5. Entry Point Behavior
+**Decision:** Just log and exit, no server yet
 
-The spec says:
+**Implementation:**
+```javascript
+logger.info('WaxPrep booting — environment valid');
+process.exit(0);
+```
 
-> "If all variables are present, the app starts and logs a clean JSON message"
+**Reason:** Stage 02 will create the server. Stage 01 proves the foundation works.
 
-**Question:** Should the app just log and exit, or should it start a server (even if empty)?
+### 6. Environment Variables
+**Decision:** Define ALL variables for the final system, not just Stage 01 needs
 
-**Recommendation:** For Stage 01, just log and exit. Server creation is Stage 02.
+**Total:** 14 environment variables across 6 categories:
+- Application (3)
+- WhatsApp (5)
+- Database (1)
+- Cache/Queue (1)
+- AI (2)
+- Security (1)
+
+**Reason:** This is the contract document for the whole project. All variables must be validated at startup.
+
+---
+
+## Files Created
+
+| File | Purpose |
+|------|---------|
+| `.nvmrc` | Node.js version pinning (v22) |
+| `.gitignore` | Security - excludes `.env` files from git |
+| `.env.example` | Template with ALL project variables (no real values) |
+| `package.json` | ESM config, dependencies, scripts, engines field |
+| `src/config/env.js` | Zod validation for all environment variables |
+| `src/config/logger.js` | Pino structured logging with NODE_ENV-based transport |
+| `src/index.js` | Entry point - loads dotenv, validates env, logs startup message |
+
+## Dependencies Installed
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `dotenv` | ^16.4.7 | Load `.env` files |
+| `pino` | ^9.6.0 | Structured JSON logging |
+| `pino-pretty` | ^13.0.0 | Human-readable logs in development |
+| `zod` | ^3.24.2 | Runtime environment validation |
+
+---
+
+## Verification
+
+### How to Test
+
+1. **Clone and install:**
+```bash
+git clone https://github.com/infoohangwacommunity-pixel/Fight-or-scram.git
+cd Fight-or-scram
+nvm use
+npm install
+```
+
+2. **Configure environment:**
+```bash
+cp .env.example .env
+# Edit .env with placeholder values
+```
+
+3. **Run the application:**
+```bash
+npm start
+```
+
+**Expected output:**
+```
+{"level":30,"time":"2026-08-23T22:12:34.123Z","pid":1234,"msg":"WaxPrep booting — environment valid"}
+```
+
+4. **Test validation (remove a required variable):**
+```bash
+# Remove WHATSAPP_PHONE_NUMBER_ID from .env
+npm start
+```
+
+**Expected output:**
+```
+❌ Invalid environment variables:
+
+Please ensure your .env file contains all required variables:
+
+Copy .env.example to .env and fill in the values:
+  cp .env.example .env
+
+Validation errors:
+{
+  "WHATSAPP_PHONE_NUMBER_ID": {
+    "_errors": ["Required"]
+  },
+  ...
+}
+```
 
 ---
 
@@ -481,34 +403,36 @@ The spec says:
 | **ESM vs CJS** | ESM is the modern standard, use `"type": "module"` |
 | **Secrets** | Never commit `.env`, always use `.env.example` template |
 | **Validation** | Fail fast with Zod to catch config errors at startup |
-| **Logging** | Use Pino for structured JSON logs, never `console.log` |
+| **Logging** | Use Pino for structured JSON logs, NODE_ENV-based transport |
 
-### Files to Create
+### Implementation Status
 
-1. `.nvmrc` - Node version pinning
-2. `.gitignore` - Security (exclude `.env`)
-3. `.env.example` - Template for developers
-4. `package.json` - Project configuration
-5. `src/config/env.js` - Environment validation
-6. `src/config/logger.js` - Logger instance
-7. `src/index.js` - Entry point
+✅ **All Stage 01 requirements completed:**
+- Node.js 22 pinned via `.nvmrc` and `engines` field
+- ESM configured with `"type": "module"`
+- All 14 environment variables defined and validated
+- Pino logger with NODE_ENV-based transport
+- Fail-fast validation with clear error messages
+- `.env` excluded from git, `.env.example` committed
+- Clean JSON startup message logged
 
-### Dependencies
+### Next Stage: Stage 02 - The Application Server
 
-- `zod` (v3.x) - Validation
-- `pino` (v9.x) - Logging
-- `pino-pretty` - Development logging
-- `dotenv` (v16.x) - Environment loading
-
----
-
-## Next Steps
-
-1. **Review this report** and confirm all research is accurate
-2. **Answer the clarification questions** (repository name, project structure, etc.)
-3. **Approve the implementation plan**
-4. **I will then create all files and push to GitHub**
+Stage 02 will create the HTTP server that receives all WhatsApp messages:
+- Fastify server with plugin system
+- Security headers with Helmet
+- Graceful shutdown handling
+- Health check endpoints (`/health/live`, `/health/ready`)
+- Correlation IDs for request tracing
 
 ---
 
-*This report was generated as part of the WaxPrep Stage 01 research phase. All information is based on current best practices for Node.js development as of 2026-08-23.*
+## Git Commit
+
+**Commit SHA:** `d58e6362f963d50cdcc122f6803bb52d27488b63`  
+**Message:** `feat: Implement Stage 01 - Project foundation with Node.js 22, ESM, env validation, and structured logging`  
+**URL:** https://github.com/infoohangwacommunity-pixel/Fight-or-scram/commit/d58e6362f963d50cdcc122f6803bb52d27488b63
+
+---
+
+*Stage 01 complete. Ready for Stage 02.*
