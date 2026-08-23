@@ -1,0 +1,28 @@
+{
+  "name": "waxprep",
+  "version": "0.1.0",
+  "description": "WaxPrep - A WhatsApp-based sentiment analysis platform",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": ["whatsapp", "sentiment-analysis", "ai"],
+  "author": "Waza",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infoohangwacommunity-pixel/Fight-or-scram.git"
+  }
+}
